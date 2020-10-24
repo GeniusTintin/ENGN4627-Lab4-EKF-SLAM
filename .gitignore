@@ -1,0 +1,9 @@
+# Subfolder
+Dataset/
+Check_point(duo landmarks)/
+Figures/
+Legacy/
+Resources/
+
+# temporary files
+*.asm
