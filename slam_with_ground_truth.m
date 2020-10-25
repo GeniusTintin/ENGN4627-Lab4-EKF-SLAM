@@ -4,12 +4,31 @@ close all
 clear
 clc
 
-
 addpath("../simulator/");
+% ground truth trajectory
+t = 0:0.01:pi/2;
+xTrace = [1,3,3+0.5*sin(t),4-0.5*cos(t),4+0.5*sin(2*t),4,3,...
+    3-0.5*sin(t),2+0.5*cos(t),2-0.5*sin(t)];
+yTrace = [1,1,1.5-0.5*cos(t),1.5+0.5*sin(t),2.5-0.5*cos(2*t),3,3,...
+    2.5+0.5*cos(t),2.5-0.5*sin(t),1.5+0.5*cos(t)];
+
+figure
+trail_axes = gca();
+
+% plot the ground truth
+plot(xTrace,yTrace,'g-','Parent',trail_axes); grid on; grid minor
+hold on
+title("Integrated robot position")
+xlim(trail_axes,[0,5]);
+ylim(trail_axes,[0,5]);
+axis(trail_axes,'manual');
+
 % start the robot with one simple landmark
 % lm = [[1.5;1.5],[3.5;1.5]];
 %  lm = [[1.5;1.5]];
-pb = piBotSim("Floor_course.jpg");
+[lmx,lmy] = meshgrid(0.5:(4/3):4.5);
+landmarks = [lmx(:)'; lmy(:)'];
+pb = piBotSim("Floor_course.jpg",landmarks);
 
 
 % initial pose
@@ -22,9 +41,11 @@ state_vector = [x;y;theta];
 % covariance matrix (have the same length of the state vector)
 Sigma = eye(3) * 0.01; 
 % input noise covariance
-R = eye(2) * 0.04;
+R = eye(2) * [0.04,0;0,0.08];
+% 0.04
 % measurement noise covariance
-Q = 0.02;
+Q = 0.1;
+% 0.02
 % tells which element of the measurement corresponds to which id
 state_ids = []; 
 
@@ -40,7 +61,7 @@ for j = 1:500
     img = pb.getCamera();
     
     % follow line
-    [u, q] = line_control(img, 0.5);
+    [u, q] = line_control(img, 0.2, pb);
     [wl, wr] = inverse_kinematics(u, q);
     pb.setVelocity(wl, wr);
 
@@ -60,7 +81,7 @@ for j = 1:500
     % function [xiHat, Sigma] = ekf_expansion(xiHat, Sigma, lms, ids, state_ids, R)
     [lms, ids] = pb.measureLandmarks();
     
-    if ~isempty(ids)
+    if ~isempty(ids) && ~any(isnan(lms(1,:)))
         [state_vector, Sigma, state_ids] = ekf_expansion(state_vector, Sigma, lms, ids, state_ids, R);
         % ##########Update##########
         % Update procedure:
@@ -84,17 +105,11 @@ for j = 1:500
     
 % ##########Plot##########
     
-    figure(2)
-    hold on
-    plot(xiHatSave(1,:),xiHatSave(2,:),'b-');
-    xlim([0 5])
-    ylim([0 5])
-    grid on
-    grid minor
-    plot(integration(1,:), integration(2,:),'r-');
+    plot(xiHatSave(1,:),xiHatSave(2,:),'b-','parent',trail_axes);
+    plot(integration(1,:), integration(2,:),'r-','parent',trail_axes);
     for i = 1:numel(state_ids)
         scatter(state_vector(3+2*i-1),state_vector(3+2*i),6,'MarkerFaceColor',cmap(state_ids(i))...
-            ,'MarkerEdgeColor','none');
+            ,'MarkerEdgeColor','none','parent',trail_axes);
     end
 
 end

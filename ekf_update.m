@@ -45,8 +45,10 @@ function [xiHat, Sigma] = ekf_update(xiHat, Sigma, Q, lms, ids, state_ids)
        z_err = [z_err; zHat - z_i];
     end
        % Kalman gain
-       K = Sigma * C' * (C * Sigma * C' + Q)^(-1);
+       
+       K = Sigma * C' /(C * Sigma * C' + Q);
        % Update Sigma
        Sigma = (eye(numel(xiHat)) - K * C) * Sigma;
        xiHat = xiHat - K * z_err;
+       
 end

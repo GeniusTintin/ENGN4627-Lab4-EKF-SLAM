@@ -4,17 +4,20 @@ close all
 clear
 clc
 
-
 addpath("../simulator/");
+addpath("./Dataset");
+
+load("landmarks4.mat");
+load("myDataset4.mat");
 % start the robot with one simple landmark
 % lm = [[1.5;1.5],[3.5;1.5]];
 %  lm = [[1.5;1.5]];
-pb = piBotSim("Floor_course.jpg");
+% pb = piBotSim("Floor_circle.jpg");
 
 
 % initial pose
 x = 1; y = 1; theta = 0;
-pb.place([x;y],theta);
+% pb.place([x;y],theta);
 % timestamp
 dt = 0.1;
 % state vector xi
@@ -35,14 +38,20 @@ xiHatSave = [];
 Int = [x;y;theta];
 integration = [];
 
-for j = 1:500
+for j = 1:size(myDataset,2)
     
-    img = pb.getCamera();
+%     img = pb.getCamera();
+    data = myDataset(j);
+    
+    wheel = data.wheelVelocity;
+    velocity = data.velocity;
+    wl = wheel(1); wr = wheel(2);
+    u = velocity(1); q = velocity(2);
     
     % follow line
-    [u, q] = line_control(img, 0.5);
-    [wl, wr] = inverse_kinematics(u, q);
-    pb.setVelocity(wl, wr);
+%     [u, q] = line_control(img, 0.5);
+%     [wl, wr] = inverse_kinematics(u, q);
+%     pb.setVelocity(wl, wr);
 
 % ##########prediction##########
     % predict procedure:
@@ -58,7 +67,9 @@ for j = 1:500
     % Expand the state vector (if new landmark observed)
     % Expand the covariance matrix (if new landmark obversed)
     % function [xiHat, Sigma] = ekf_expansion(xiHat, Sigma, lms, ids, state_ids, R)
-    [lms, ids] = pb.measureLandmarks();
+%     [lms, ids] = pb.measureLandmarks();
+    lms = data.landmarks(1:2,:);
+    ids = data.landmarks(4,:);
     
     if ~isempty(ids)
         [state_vector, Sigma, state_ids] = ekf_expansion(state_vector, Sigma, lms, ids, state_ids, R);

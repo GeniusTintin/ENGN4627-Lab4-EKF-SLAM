@@ -1,6 +1,5 @@
-function [u, q] = line_control(img, u)% Calibrate the scale parameter and wheel track of the robot
+function [u, q] = line_control(img, u, pb)% Calibrate the scale parameter and wheel track of the robot
 addpath("../simulator/"); % Add the simulator to the MATLAB path.
-
     gray = rgb2gray(img);
     bin_img = ~imbinarize(gray, 0.2);
 
