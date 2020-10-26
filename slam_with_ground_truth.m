@@ -18,7 +18,7 @@ trail_axes = gca();
 % plot the ground truth
 plot(xTrace,yTrace,'g-','Parent',trail_axes); grid on; grid minor
 hold on
-title("Integrated robot position")
+title("EKF-SLAM vs Direct Integration")
 xlim(trail_axes,[0,5]);
 ylim(trail_axes,[0,5]);
 axis(trail_axes,'manual');
@@ -39,7 +39,7 @@ dt = 0.1;
 % state vector xi
 state_vector = [x;y;theta];
 % covariance matrix (have the same length of the state vector)
-Sigma = eye(3) * 0.01; 
+Sigma = eye(3) * 0.1; 
 % input noise covariance
 R = eye(2) * [0.04,0;0,0.08];
 % 0.04
@@ -56,12 +56,15 @@ xiHatSave = [];
 Int = [x;y;theta];
 integration = [];
 
-for j = 1:500
+while true
     
     img = pb.getCamera();
     
     % follow line
-    [u, q] = line_control(img, 0.2, pb);
+    [u, q, void] = line_control(img, 2.0, pb);
+    if void
+        break
+    end
     [wl, wr] = inverse_kinematics(u, q);
     pb.setVelocity(wl, wr);
 
@@ -113,6 +116,8 @@ for j = 1:500
     end
 
 end
+legend('Ground Truth','EKF-SLAM','Direct Integration')
+legend('Ground Truth','EKF-SLAM','Direct Integration')
 
 
 

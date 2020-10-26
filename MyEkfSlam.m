@@ -11,7 +11,16 @@ addpath("../simulator/");
 %  lm = [[1.5;1.5]];
 pb = piBotSim("Floor_course.jpg");
 
-
+% show the figure
+figure
+trail_axes = gca();
+hold on
+title("EKF-SLAM estiamtion")
+xlim(trail_axes, [0 5]);
+ylim(trail_axes, [0 5]);
+axis(trail_axes, "manual");
+grid on
+grid minor
 % initial pose
 x = 1; y = 1; theta = 0;
 pb.place([x;y],theta);
@@ -35,12 +44,15 @@ xiHatSave = [];
 Int = [x;y;theta];
 integration = [];
 
-for j = 1:500
+while true
     
     img = pb.getCamera();
     
     % follow line
-    [u, q] = line_control(img, 0.5);
+    [u, q, void] = line_control(img, 2.0, pb);
+    if void
+        break
+    end
     [wl, wr] = inverse_kinematics(u, q);
     pb.setVelocity(wl, wr);
 
@@ -84,17 +96,11 @@ for j = 1:500
     
 % ##########Plot##########
     
-    figure(2)
-    hold on
-    plot(xiHatSave(1,:),xiHatSave(2,:),'b-');
-    xlim([0 5])
-    ylim([0 5])
-    grid on
-    grid minor
-    plot(integration(1,:), integration(2,:),'r-');
+    plot(xiHatSave(1,:),xiHatSave(2,:),'b-','parent',trail_axes);
+    plot(integration(1,:), integration(2,:),'r-','parent',trail_axes);
     for i = 1:numel(state_ids)
         scatter(state_vector(3+2*i-1),state_vector(3+2*i),6,'MarkerFaceColor',cmap(state_ids(i))...
-            ,'MarkerEdgeColor','none');
+            ,'MarkerEdgeColor','none','parent',trail_axes);
     end
 
 end
