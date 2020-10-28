@@ -36,25 +36,26 @@ x = 1; y = 1; theta = 0;
 pb.place([x;y],theta);
 % timestamp
 dt = 0.1;
+dt_acc = 0;
 % state vector xi
 state_vector = [x;y;theta];
 % covariance matrix (have the same length of the state vector)
-Sigma = eye(3) * 0.1; 
+Sigma = eye(3) * 0.02; 
 % input noise covariance
 R = eye(2) * [0.04,0;0,0.08];
 % 0.04
 % measurement noise covariance
-Q = 0.1;
+Q = 0.05;
 % 0.02
 % tells which element of the measurement corresponds to which id
 state_ids = []; 
 
-% pose estimation
-xiHatSave = [];
-
 % direct integration result
 Int = [x;y;theta];
 integration = [];
+
+estimated_landmarks = [];
+estimated_trajectory = [];
 
 while true
     
@@ -67,7 +68,7 @@ while true
     end
     [wl, wr] = inverse_kinematics(u, q);
     pb.setVelocity(wl, wr);
-
+    dt_acc = dt_acc + 1;
 % ##########prediction##########
     % predict procedure:
     % Propagate the state
@@ -103,21 +104,50 @@ while true
         state_vector(3) = state_vector(3) + 2 * pi;
     end
     
-    xiHatSave = [xiHatSave,state_vector(1:2)];
+    estimated_trajectory = [estimated_trajectory,state_vector(1:3)];
     integration = [integration, Int];
     
 % ##########Plot##########
-    
-    plot(xiHatSave(1,:),xiHatSave(2,:),'b-','parent',trail_axes);
+    plot(estimated_trajectory(1,:),estimated_trajectory(2,:),'b-','parent',trail_axes);
     plot(integration(1,:), integration(2,:),'r-','parent',trail_axes);
+    
     for i = 1:numel(state_ids)
-        scatter(state_vector(3+2*i-1),state_vector(3+2*i),6,'MarkerFaceColor',cmap(state_ids(i))...
-            ,'MarkerEdgeColor','none','parent',trail_axes);
+        color = state_ids(i);
+        scatter(state_vector(3+2*i-1),state_vector(3+2*i),6,'MarkerFaceColor'...
+            ,cmap(color),'MarkerEdgeColor','none','parent',trail_axes);
+%         hold on
+        
     end
-
+%     hold off
+    % plot ellipse
+    if mod(dt_acc, 1) == 0 
+        e_state = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),trail_axes, 'b');
+    end
+%     xlim(trail_axes, [0 5]);
+%     ylim(trail_axes, [0 5]);
+%     axis(trail_axes, 'manual');
+%     hold off
 end
+
+% compute the estimated landmarks matrix
+for i = 1:(numel(state_vector) - 3)/2
+    index = find(state_ids == i);
+    estimated_landmarks = [estimated_landmarks, state_vector(3+2*index-1:3+2*index)];
+end
+
+for i = 1:numel(state_ids)
+    color = state_ids(i);
+    ei = plot_ellipses(state_vector(3+2*i-1:3+2*i),Sigma(3+2*i-1:3+2*i,3+2*i-1:3+2*i)...
+        ,trail_axes, cmap(color));
+    text(state_vector(3+2*i-1)+0.1, state_vector(3+2*i)+0.1, cellstr(num2str(color))...
+        , 'Color',cmap(color), 'FontSize', 12, 'parent', trail_axes);
+end
+plot(xTrace,yTrace,'g-','Parent',trail_axes)
 legend('Ground Truth','EKF-SLAM','Direct Integration')
 legend('Ground Truth','EKF-SLAM','Direct Integration')
 
+pb.saveTrail();
+
+RMSE_calcultion(estimated_landmarks, estimated_trajectory, landmarks)
 
 

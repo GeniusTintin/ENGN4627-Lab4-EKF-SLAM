@@ -1,10 +1,11 @@
 # Subfolder
 Dataset/
-Check_point/
+u7024641_engn4627_Lab4_code/
 Figures/
 Legacy/
 Resources/
+Report/
 
 # temporary files
 *.asv
-
+*.zip
