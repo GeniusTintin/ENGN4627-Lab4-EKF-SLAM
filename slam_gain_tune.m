@@ -15,17 +15,28 @@ yTrace = [1,1,1.5-0.5*cos(t),1.5+0.5*sin(t),2.5-0.5*cos(2*t),3,3,...
 figure
 trail_axes = gca();
 
+%landmark error
+% figure
+% error_axes = gca();
+% err = [];
+
+% robot pose error
+figure
+error_axes2 = gca();
+err_p1 = [];
+err_p2 = [];
 
 % hold on
 
 
 % start the robot with one simple landmark
-% lm = [[1.5;1.5],[3.5;1.5]];
-%  lm = [[1.5;1.5]];
+% landmarks = [[1;2.5],[4;2.5],[2.5;4],[2.5;1]];
+% landmarks = [[1.5;1.5],[3.5;1.5]];
+% landmarks = [[1.5;1.5]];
 
 % grid landmarks
-[lmx,lmy] = meshgrid(0.5:(4/3):4.5);
-landmarks = [lmx(:)'; lmy(:)'];
+% [lmx,lmy] = meshgrid(0.5:(4/3):4.5);
+% landmarks = [lmx(:)'; lmy(:)'];
 
 % landmarks alone the course (more)
 % landmarks1 = [1.5:1:2.5;ones(1,2)];
@@ -35,6 +46,13 @@ landmarks = [lmx(:)'; lmy(:)'];
 % landmarks5 = 0.5*[cos(pi/2:pi/6:pi);sin(pi/2:pi/6:pi)] + [2;1.5];
 % landmarks = [landmarks1,landmarks2,landmarks3,landmarks4,landmarks5];
 
+% landmarks alone the course less
+landmarks1 = [2 3;ones(1,2)];
+landmarks2 = [[3.5;1.5],[4;2],[4.5;2.5]];
+landmarks3 = [(4.1:-1:3.1);3*ones(1,2)];
+landmarks4 = [(2.5:-0.5:1.5);(2.5:-0.5:1.5)];
+landmarks = [landmarks1,landmarks2,landmarks3,landmarks4];
+
 pb = piBotSim("Floor_course.jpg",landmarks);
 % pb = piBotSim("Floor_course.jpg");
 
@@ -43,15 +61,16 @@ x = 1; y = 1; theta = 0;
 pb.place([x;y],theta);
 % timestamp
 dt = 0.1;
+dt_acc = 0;
 % state vector xi
 state_vector = [x;y;theta];
 % covariance matrix (have the same length of the state vector)
-Sigma = eye(3) * 0.05; 
+Sigma = eye(3) * 0.1; 
 % input noise covariance
 R = eye(2) * [0.04,0;0,0.08];
 % 0.04
 % measurement noise covariance
-Q = 0.4;
+Q = 0.5;
 % 0.02
 % tells which element of the measurement corresponds to which id
 state_ids = []; 
@@ -67,7 +86,7 @@ integration = [];
 estimated_landmarks=[];
 estimated_trajectory=[];
 
-while true
+for loop = 1:1000
     
     img = pb.getCamera();
     
@@ -78,7 +97,7 @@ while true
     end
     [wl, wr] = inverse_kinematics(u, q);
     pb.setVelocity(wl, wr);
-
+    dt_acc = dt_acc + 1;
 % ##########prediction##########
     % predict procedure:
     % Propagate the state
@@ -105,6 +124,32 @@ while true
         % function [xiHat, Sigma] = ekf_update(xiHat, Sigma, Q, lms, ids, state_ids)
         [state_vector, Sigma] = ekf_update(state_vector, Sigma, Q, lms, ids, state_ids);
     end
+    
+    % landmark estimation error plot
+%     z_err = 0;
+%     for i =1:numel(state_ids)
+%         temp = landmarks(:,state_ids(i)) - [state_vector(3+2*i-1);state_vector(3+2*i)];
+%         z_err = z_err + norm(temp);
+%     end
+%     err = [err,[z_err/numel(state_ids);dt_acc]];
+%     plot(err(2,:),err(1,:),'b-','Parent',error_axes);
+%     title("average landmark estimation error over time")
+%     grid on
+%     grid minor
+%     xlabel("timestamp {(0.1s)}")
+    
+    % robot pose error estimation plot
+    real_xy = pb.measure();
+    err_ekf = norm(real_xy - state_vector(1:2));
+    err_int = norm(real_xy - Int(1:2));
+    err_p1 = [err_p1,[err_ekf;dt_acc]];
+    err_p2 = [err_p2,[err_int;dt_acc]];
+    plot(err_p1(2,:),err_p1(1,:),'b-','Parent',error_axes2)
+    hold on
+    plot(err_p2(2,:),err_p2(1,:),'r-','Parent',error_axes2)
+    hold off
+    title('error comparison')
+    legend('EKF-SLAM', 'direct integration')
     
     % normalise theta
     while state_vector(3) > 2 * pi

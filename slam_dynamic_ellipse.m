@@ -6,11 +6,21 @@ clc
 
 addpath("../simulator/");
 % ground truth trajectory
-t = 0:0.01:pi/2;
-xTrace = [1,3,3+0.5*sin(t),4-0.5*cos(t),4+0.5*sin(2*t),4,3,...
-    3-0.5*sin(t),2+0.5*cos(t),2-0.5*sin(t)];
-yTrace = [1,1,1.5-0.5*cos(t),1.5+0.5*sin(t),2.5-0.5*cos(2*t),3,3,...
-    2.5+0.5*cos(t),2.5-0.5*sin(t),1.5+0.5*cos(t)];
+% t = 0:0.01:pi/2;
+% course
+% xTrace = [1,3,3+0.5*sin(t),4-0.5*cos(t),4+0.5*sin(2*t),4,3,...
+%     3-0.5*sin(t),2+0.5*cos(t),2-0.5*sin(t)];
+% yTrace = [1,1,1.5-0.5*cos(t),1.5+0.5*sin(t),2.5-0.5*cos(2*t),3,3,...
+%     2.5+0.5*cos(t),2.5-0.5*sin(t),1.5+0.5*cos(t)];
+
+% circle
+t = 0:0.01:2*pi;
+xTrace = cos(t) + 2.5;
+yTrace = sin(t) + 2.5;
+
+% square
+% xTrace = [1.5,3.5,3.5,1.5,1.5];
+% yTrace = [1.5,1.5,3.5,3.5,1.5];
 
 figure
 trail_axes = gca();
@@ -20,8 +30,9 @@ trail_axes = gca();
 
 
 % start the robot with one simple landmark
-% lm = [[1.5;1.5],[3.5;1.5]];
-%  lm = [[1.5;1.5]];
+% landmarks = [[1;2.5],[4;2.5],[2.5;4],[2.5;1]];
+% landmarks = [[1;1],[1;2.5],[1;4],[4;1],[4;2.5],[2.5;4],[2.5;1],[4;4]];
+% landmarks = [[1.5;1.5]];
 
 % grid landmarks
 [lmx,lmy] = meshgrid(0.5:(4/3):4.5);
@@ -39,7 +50,7 @@ pb = piBotSim("Floor_course.jpg",landmarks);
 % pb = piBotSim("Floor_course.jpg");
 
 % initial pose
-x = 1; y = 1; theta = 0;
+x = 2.5; y = 1.5; theta = 0;
 pb.place([x;y],theta);
 % timestamp
 dt = 0.1;
@@ -67,7 +78,7 @@ integration = [];
 estimated_landmarks=[];
 estimated_trajectory=[];
 
-while true
+for j = 1:1000
     
     img = pb.getCamera();
     

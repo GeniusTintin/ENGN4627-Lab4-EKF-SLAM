@@ -120,7 +120,7 @@ while true
     end
 %     hold off
     % plot ellipse
-    if mod(dt_acc, 1) == 0 
+    if mod(dt_acc, 20) == 0 
         e_state = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),trail_axes, 'b');
     end
 %     xlim(trail_axes, [0 5]);

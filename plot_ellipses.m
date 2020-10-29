@@ -12,7 +12,7 @@ end
 
 [V,D] = eig(cov);
 ang = linspace(0,2*pi);
-ellipse = 0.5*V*sqrt(D)*[cos(ang);sin(ang)] + centre;
+ellipse = 1*V*sqrt(D)*[cos(ang);sin(ang)] + centre;
 % e = rectangle(axh,'position' ,[llc(:).', wh(:).'],'Curvature',[1,1]);
 e = plot(ellipse(1,:),ellipse(2,:),'Parent',axh,'Color',color);
 end

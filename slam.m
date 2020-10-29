@@ -23,7 +23,7 @@ dt = 0.1;
 % state vector xi
 state_vector = [x;y;theta];
 % covariance matrix (have the same length of the state vector)
-Sigma = eye(3) * 0.05; 
+Sigma = eye(3) * 0.1; 
 % input noise covariance
 R = eye(2) * [0.05,0;0,0.1];
 % 0.04
@@ -41,8 +41,8 @@ Int = [x;y;theta];
 integration = [];
 
 % values for evaluation
-estimated_landmarks=[];
-estimated_trajectory=[];
+estimated_landmarks =[];
+estimated_trajectory =[];
 
 while true
     

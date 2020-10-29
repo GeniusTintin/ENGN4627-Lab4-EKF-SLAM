@@ -1,4 +1,4 @@
-function [xiHat, Sigma] = ekf_update(xiHat, Sigma, Q, lms, ids, state_ids)
+function [xiHat, Sigma, z_err] = ekf_update_s(xiHat, Sigma, Q, lms, ids, state_ids)
 % function of update after measurement of EKF
 % #inputs:
 % xiHat: predicted state at t+1
@@ -36,7 +36,7 @@ function [xiHat, Sigma] = ekf_update(xiHat, Sigma, Q, lms, ids, state_ids)
        % ith C matrix
        Ci = [C_0,zeros(2,2*(index-1)),C_lm,zeros(2,2*(length-index))];
        % overall constructed C matrix
-       C = [C;Ci]; %#ok<*AGROW>
+       C = [C;Ci];
        
        % Compute z_err
        rotation_matrix = [cos(th), -sin(th);
