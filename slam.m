@@ -16,7 +16,7 @@ trail_axes = gca();
 
 
 % initial pose
-x = 1; y = 1; theta = 0;
+x = 0; y = 0; theta = 0;
 % pb.place([x;y],theta);
 % timestamp
 dt = 0.1;
@@ -116,7 +116,7 @@ while true
             , 'Color',cmap(color), 'FontSize', 12, 'Parent', trail_axes);
         
         e0 = plot_ellipses(state_vector(3+2*i-1:3+2*i),Sigma(3+2*i-1:3+2*i,3+2*i-1:3+2*i)...
-            ,trail_axes,cmap(color));
+            ,cmap(color),trail_axes);
 %         e0.EdgeColor = cmap(color);
 %         e0.LineWidth = 0.5;
         
@@ -130,9 +130,9 @@ while true
     end
     
     % plot ellipse
-    e1 = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),trail_axes,'b');
-    xlim(trail_axes, [0 5]);
-    ylim(trail_axes, [0 5]);
+    e1 = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),'b',trail_axes);
+    xlim(trail_axes, [-5 5]);
+    ylim(trail_axes, [-5 5]);
     axis(trail_axes, 'manual');
     hold off
 end

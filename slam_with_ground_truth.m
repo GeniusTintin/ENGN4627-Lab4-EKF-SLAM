@@ -26,10 +26,12 @@ axis(trail_axes,'manual');
 % start the robot with one simple landmark
 % lm = [[1.5;1.5],[3.5;1.5]];
 %  lm = [[1.5;1.5]];
-[lmx,lmy] = meshgrid(0.5:(4/3):4.5);
-landmarks = [lmx(:)'; lmy(:)'];
-pb = piBotSim("Floor_course.jpg",landmarks);
+% grid landmarks
+% [lmx,lmy] = meshgrid(0.5:(4/3):4.5);
+% landmarks = [lmx(:)'; lmy(:)'];
 
+% pb = piBotSim("Floor_course.jpg",landmarks);
+pb = piBotSim("floor_course.jpg");
 
 % initial pose
 x = 1; y = 1; theta = 0;
@@ -40,7 +42,7 @@ dt_acc = 0;
 % state vector xi
 state_vector = [x;y;theta];
 % covariance matrix (have the same length of the state vector)
-Sigma = eye(3) * 0.02; 
+Sigma = eye(3) * 0.1; 
 % input noise covariance
 R = eye(2) * [0.04,0;0,0.08];
 % 0.04
@@ -121,7 +123,7 @@ while true
 %     hold off
     % plot ellipse
     if mod(dt_acc, 20) == 0 
-        e_state = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),trail_axes, 'b');
+        e_state = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),'b',trail_axes);
     end
 %     xlim(trail_axes, [0 5]);
 %     ylim(trail_axes, [0 5]);
@@ -138,7 +140,7 @@ end
 for i = 1:numel(state_ids)
     color = state_ids(i);
     ei = plot_ellipses(state_vector(3+2*i-1:3+2*i),Sigma(3+2*i-1:3+2*i,3+2*i-1:3+2*i)...
-        ,trail_axes, cmap(color));
+        , cmap(color), trail_axes);
     text(state_vector(3+2*i-1)+0.1, state_vector(3+2*i)+0.1, cellstr(num2str(color))...
         , 'Color',cmap(color), 'FontSize', 12, 'parent', trail_axes);
 end

@@ -182,7 +182,7 @@ for loop = 1:1000
             ,cmap(color),'MarkerEdgeColor','none','parent',trail_axes);
         text(state_vector(3+2*i-1)+0.1, state_vector(3+2*i)+0.1, cellstr(num2str(color)), 'Color',cmap(color), 'FontSize', 12);
         e0 = plot_ellipses(state_vector(3+2*i-1:3+2*i),Sigma(3+2*i-1:3+2*i,3+2*i-1:3+2*i)...
-            ,trail_axes,cmap(color));
+            ,cmap(color),trail_axes);
 %         e0.EdgeColor = cmap(color);
 %         e0.LineWidth = 0.5;
     end
@@ -195,7 +195,7 @@ for loop = 1:1000
     end
     
     % plot ellipse
-    e1 = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),trail_axes,'b');
+    e1 = plot_ellipses(state_vector(1:2),Sigma(1:2,1:2),'b',trail_axes);
     xlim(trail_axes, [0 5]);
     ylim(trail_axes, [0 5]);
     axis(trail_axes, 'manual');
