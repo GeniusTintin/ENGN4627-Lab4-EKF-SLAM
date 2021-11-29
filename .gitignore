@@ -9,3 +9,4 @@ Report/
 # temporary files
 *.asv
 *.zip
+.DS_Store
